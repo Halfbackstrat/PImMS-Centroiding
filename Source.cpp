@@ -4,7 +4,7 @@
 #include <fstream>
 
 // Declare Functions
-void build_cluster(std::vector < std::vector<int> > list_of_hits, int shot);
+void build_cluster(std::vector<std::vector<std::vector<std::vector<int> > > > &shot_list, std::vector < std::vector<int> > list_of_hits, int shot);
 void print();
 
 // Declare Vector Structures
@@ -27,6 +27,9 @@ int thread_count = 1;
 int shot_count = 1;
 int main()
 {
+
+	shot_list.resize(1);
+	std::cout << "Method Solved?" << std::endl;
 	std::cout << "Intialising centroiding software." << std::endl << "Reading in and identifying clusters..." << std::endl;
 	std::cout << shot_count;
 	std::ifstream InputFile;
@@ -38,8 +41,9 @@ int main()
 			//std::cout << "Shot = " << shot << " shot_count = " << shot_count << std::endl;
 			if (shot_count != shot) // Every time the shot number changes
 			{
-				
-				if (thread_count == 2)
+				std::cout << "Building the cluster" << std::endl;
+				//build_cluster(shot_list, input_holder, shot - 1);
+				/*if (thread_count == 2)
 				{
 					for (int i = 0; i < threads.size(); ++i)
 					{
@@ -49,47 +53,40 @@ int main()
 						thread_count = 1;
 					}
 
-				}
+				}*/
 				//std::cout << "New shot." << std::endl;
-				shot_list.push_back(cluster_list);
-				threads.push_back(std::thread(print/*build_cluster, input_holder, shot - 1*/)); // Create a new thread and launch it
+				//shot_list.push_back(cluster_list);
+				//threads.push_back(std::thread(print)); // Create a new thread and launch it
+				//build_cluster(shot_list, input_holder, shot - 1);
+				threads.push_back(std::thread(build_cluster, shot_list, input_holder, shot - 1));
 				//std::cout << "Thread launched for shot: " << shot-1 << std::endl;
 				//std::cout << "Input holder size before erase: " << input_holder.size() << std::endl;
-				input_holder.erase(input_holder.begin(), input_holder.end()); // Clears the input_holder vector for the next shot
+				//input_holder.erase(input_holder.begin(), input_holder.end()); // Clears the input_holder vector for the next shot
 				//std::cout << "Input holder after erase: " << input_holder.size() << std::endl;
-				++shot_count;
-				get_thread:;
-				/*try
-				{
-					//threads[0].join();
-				}
-				catch (int e)
-				{
-					std::cout << e;
-					goto get_thread;
-				}*/
-				
+				//++shot_count;
+				//get_thread:;
+				//threads[0].join();
+				goto exit;
 			}
 
 			input_holder.push_back(hit); // Creates a raw list of hits for the shot
 			input_holder[input_holder.size() - 1][0] = t;
 			input_holder[input_holder.size() - 1][1] = x;
 			input_holder[input_holder.size() - 1][2] = y;
-			input_holder[input_holder.size() - 1][4] = bin;
+			input_holder[input_holder.size() - 1][3] = bin;
 		}
-
-		/*for (int i = 0; i < threads.size(); ++i)
-		{
-			std::cout << "Ending thread: " << i << std::endl;
-			threads[i].std::thread::join();
-		}*/
-		std::cout << "Print size" << std::endl;
-		std::cout << "Shot_list size = " << shot_list.size() << "Clusters in shot 1: " << shot_list[0].size();// << "Hits in the first cluster = " << shot_list[0][0].size(); // << std::endl;
-		std::cout << "End" << std::endl;
-
+	}
+	else
+	{
+		std::cout << "File not opened." << std::endl;
+		return 0;
+	}
+	exit:
+		std::cout << "Clusters built." << std::endl;
 		char ending;
 		std::cin >> ending;
-	}
+		return 0;
+
 
 	
 
@@ -100,46 +97,42 @@ void print()
 	std::cout << "This function works." << std::endl;
 }
 
-void build_cluster(std::vector < std::vector<int> > list_of_hits, int shot)
+void build_cluster(std::vector<std::vector<std::vector<std::vector<int> > > > &shot_list, std::vector < std::vector<int> > list_of_hits, int shot_loc)
 {
 	//Declarations
 	std::vector<std::vector<std::vector<int> > > cluster_list;
 
-		cluster_list.push_back(hit_list); //Handles the initial case
-		cluster_list[0].push_back(hit);
-		cluster_list[0][0][0] = list_of_hits[0][0];
-		cluster_list[0][0][1] = list_of_hits[0][1];
-		cluster_list[0][0][2] = list_of_hits[0][2];
-		cluster_list[0][0][3] = list_of_hits[0][3];
-		/*
+	cluster_list.push_back(hit_list); //Handles the initial case
+	cluster_list[0].push_back(hit);
+	cluster_list[0][0][0] = list_of_hits[0][0];
+	cluster_list[0][0][1] = list_of_hits[0][1];
+	cluster_list[0][0][2] = list_of_hits[0][2];
+	cluster_list[0][0][3] = list_of_hits[0][3];
 	
-		for (int i = 1; i < list_of_hits.size(); ++i) // Cycle through unprocessed hits hits
+	for (int list = 1; list < list_of_hits.size(); ++list)
+	{
+		for (int i = 0; i < cluster_list.size(); ++i)
 		{
-			for (int ccount = 0; ccount < cluster_list.size(); ++ccount) // Cycle through the clusters
+			for (int j = 0; j < cluster_list[i].size(); ++j)
 			{
-				for (int hitcount = 0; hitcount < cluster_list[ccount].size(); ++hitcount) // Cycle through the hitcounts
+				if (list_of_hits[list][0] >= cluster_list[i][j][0] - 1 && list_of_hits[list][0] <= cluster_list[i][j][0] + 1 && list_of_hits[list][1] >= cluster_list[i][j][1] - 1 && list_of_hits[list][1] <= cluster_list[i][j][1] + 1 && list_of_hits[list][2] >= cluster_list[i][j][2] - 1 && list_of_hits[list][2] <= cluster_list[i][j][2] + 1)
 				{
-					if (hit_list[i][0] >= cluster_list[ccount][hitcount][0] - 1 && hit_list[i][0] <= cluster_list[ccount][hitcount][0] + 1 && hit_list[i][1] >= cluster_list[ccount][hitcount][1] - 1 && hit_list[i][1] <= cluster_list[ccount][hitcount][1] + 1 && hit_list[i][2] >= cluster_list[ccount][hitcount][2] - 1 && hit_list[i][2] <= cluster_list[ccount][hitcount][2] + 1)
-					{
-						cluster_list[ccount].push_back(hit);
-						cluster_list[ccount][cluster_list[ccount].size() - 1][0] = hit_list[i][0]; // t
-						cluster_list[ccount][cluster_list[ccount].size() - 1][1] = hit_list[i][1]; // x
-						cluster_list[ccount][cluster_list[ccount].size() - 1][2] = hit_list[i][2]; // y
-						cluster_list[ccount][cluster_list[ccount].size() - 1][3] = hit_list[i][3]; // bin
-						break;
-					}
+					cluster_list[i].push_back(hit);
+					cluster_list[i][cluster_list[i].size() - 1][0] = list_of_hits[list][0];
+					cluster_list[i][cluster_list[i].size() - 1][1] = list_of_hits[list][1];
+					cluster_list[i][cluster_list[i].size() - 1][2] = list_of_hits[list][2];
+					cluster_list[i][cluster_list[i].size() - 1][3] = list_of_hits[list][3];
+					goto added_to_cluster;
 				}
 			}
-			cluster_list.push_back(hit_list);
-			cluster_list[cluster_list.size() - 1].push_back(hit);
-			cluster_list[cluster_list.size() - 1][0][0] = hit_list[i][0];
-			cluster_list[cluster_list.size() - 1][0][1] = hit_list[i][1];
-			cluster_list[cluster_list.size() - 1][0][2] = hit_list[i][2];
-			cluster_list[cluster_list.size() - 1][0][3] = hit_list[i][3];
-
-			shot_list[shot] = cluster_list; // Accesses the entry for this shot (no race condition as that shot can only be accessed by this function call)n
 		}
-
-*/
-shot_list[shot] = cluster_list; 
+	cluster_list.push_back(hit_list);
+	cluster_list[cluster_list.size() - 1].push_back(hit);
+	cluster_list[cluster_list.size() - 1][0][0] = list_of_hits[list][0];
+	cluster_list[cluster_list.size() - 1][0][1] = list_of_hits[list][1];
+	cluster_list[cluster_list.size() - 1][0][2] = list_of_hits[list][2];
+	cluster_list[cluster_list.size() - 1][0][3] = list_of_hits[list][3];
+	added_to_cluster:;
+	}	
+shot_list[shot_loc - 1] = cluster_list; 
 }
