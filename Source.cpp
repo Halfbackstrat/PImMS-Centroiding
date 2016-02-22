@@ -13,11 +13,11 @@ float sum_vector(std::vector<float> vec);
 
 // Declare Vector Structures
 std::vector<std::vector<int> > input_holder;
-std::vector < std::vector < std::vector<std::vector<int> > > > shot_list(1000);
+std::vector < std::vector < std::vector<std::vector<int> > > > shot_list(10000);
 std::vector<std::vector<std::vector<int> > > cluster_list;
 std::vector<std::vector<int> > hit_list;
 std::vector<int> hit(4);
-std::vector<std::vector<std::vector<int> > > final_image(1000);
+std::vector<std::vector<std::vector<int> > > final_image(10000);
 
 // Declare Threads
 std::vector<std::thread> threads;
@@ -30,11 +30,11 @@ int shot_count = 1;
 int main()
 {
 	int max_threads = std::thread::hardware_concurrency();
-	shot_list.resize(1000);
+	shot_list.resize(10000);
 	std::cout << "Intialising centroiding software." << std::endl << "Reading in and identifying clusters..." << std::endl;
-	std::cout << shot_count;
+	//std::cout << shot_count;
 	std::ifstream InputFile;
-	InputFile.open("/users/mb15852/Data_15_2/20160215_014");
+	InputFile.open("/users/mb15852/Data_15_2/20160217_014");
 	if (InputFile.is_open())
 	{
 		while (InputFile >> x >> y >> t >> shot >> bin)
@@ -165,9 +165,21 @@ int main()
 			}
 			std::cout << std::endl;
 		}*/
+		std::cout << "Centroiding completed. Writing the data to a new file..." << std::endl;
 
-		char ending;
-		std::cin >> ending;
+		std::ofstream OutputFile("/users/mb15852/Data_15_2/data_out");
+		for (int i = 0; i < final_image.size(); ++i)
+		{
+			for (int j = 0; j < final_image[i].size(); ++j)
+			{
+				OutputFile << final_image[i][j][0] << "\t" << final_image[i][j][1] << "\t" << final_image[i][j][2] << "\t" << final_image[i][j][3] << std::endl;
+			}
+		}
+
+		OutputFile.close();
+		std::cout << "Processing finished. Exiting software." << std::endl;
+		//:char ending;
+		//std::cin >> ending;
 		return 0;
 }
 
