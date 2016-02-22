@@ -5,6 +5,7 @@
 
 // Declare Functions
 void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::vector < std::vector<int> > list_of_hits);
+//void Centroid_image(vector<vector<int> > &cluster, int shot, int cluster_no);
 void print(std::vector<std::vector<std::vector<std::vector<int> > > >* shot_list);
 
 // Declare Vector Structures
@@ -27,9 +28,8 @@ int thread_count = 0;
 int shot_count = 1;
 int main()
 {
-	std::cout << std::thread::hardware_concurrency() << std::endl;
+	int max_threads = std::thread::hardware_concurrency();
 	shot_list.resize(1000);
-	std::cout << "Method Solved?" << std::endl;
 	std::cout << "Intialising centroiding software." << std::endl << "Reading in and identifying clusters..." << std::endl;
 	std::cout << shot_count;
 	std::ifstream InputFile;
@@ -44,32 +44,24 @@ int main()
 				//std::cout << "Building the cluster for shot: " << shot -1 << std::endl;
 				//build_cluster(shot_list, input_holder, shot - 1);
 				//std::cout << "Thread count = " << thread_count << std::endl;
-				/*if (thread_count == 2)
-				{	std::cout << "Ending threads.";
+				/*if (thread_count >= max_threads - 1)
+				{	//std::cout << "Refresh threads" << std::endl;
 					for (int i = 0; i < threads.size(); ++i)
 					{
-						std::cout << "Ending thread: " << i << std::endl;
+						//std::cout << "Ending thread: " << i << std::endl;
 						threads[i].std::thread::join();
-						threads.erase(threads.begin(), threads.end());
-						std::cout << "This bit" << std::endl;
-						thread_count = 0;
-
 					}
+					threads.erase(threads.begin(), threads.end());
+					thread_count = 0;
 
 				}*/
-				//std::cout << "New shot." << std::endl;
-				//shot_list.push_back(cluster_list);
-				//threads.push_back(std::thread(print, &shot_list)); // Create a new thread and launch it
+				//std::cout << "Submit shot " << shot  - 1 << std::endl; 
 				threads.push_back(std::thread(build_cluster, &shot_list[shot-2], input_holder)); // shot -1 to because the shot iterator has already increased, - another one to account for index from 0 in vector.
-				//std::cout << "Thread launched for shot: " << shot-1 << std::endl;
-				//std::cout << "Input holder size before erase: " << input_holder.size() << std::endl;
 				input_holder.erase(input_holder.begin(), input_holder.end()); // Clears the input_holder vector for the next shot
-				//std::cout << "Input holder after erase: " << input_holder.size() << std::endl;
 				++shot_count;
 				++thread_count;
-				//get_thread:;
-				//threads[0].join();
-				//goto exit;
+
+
 			}
 
 			input_holder.push_back(hit); // Creates a raw list of hits for the shot
@@ -94,6 +86,18 @@ int main()
 			threads[i].std::thread::join();
 		}
 		std::cout << "Completed." << std::endl;
+
+
+		for (int i = 0; i < shot_list[0].size(); ++i) // cycle through clusters
+		{
+			std::cout << "Cluster: " << i+1 << std::endl;
+			for (int j = 0; j < shot_list[0][i].size(); ++j)
+			{
+				std::cout << "Hit: " << j+1 << std::endl;
+				std::cout <<"t = " << shot_list[0][i][j][0] << " x = " << shot_list[0][i][j][1] << "y = " << shot_list[0][i][j][2] << std::endl;
+			}
+			std::cout << std::endl;
+		}
 		char ending;
 		std::cin >> ending;
 		return 0;
@@ -148,3 +152,41 @@ void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::
 
  *shot_loc= cluster_list; 
 }
+
+/*void Centroid_image(vector<vector<int> > &cluster, int shot, int cluster_no)
+{
+	vector<float> topx, topy, bottom;
+
+	for (int i - 0; i < cluster.size(); ++i)
+	{
+		int weight = cluster[i][0] - cluster[0][0] + 1;
+		float NRiWix = (cluster.size() * cluster[i][1]) / weight;
+		topx.push_back(NRiWix);
+		float NRiWiy = (cluster.size() * cluster[i][2]) / weight;
+		topy.push_back(NRiWiy);
+		float NWi = cluster.size() / weight;
+		bottom.push_back(NWi);
+	}
+
+	float sigmax = 0;
+	float sigmay = 0;
+	float sigmabottom = 0;
+
+	sigmax = sum_vector(topx);
+	sigmay = sum_vector(topy);
+	sigmabottom = sum_vector(bottom);
+
+	float cx = sigmax / sigmabottom;
+	float cy = sigmay / sigmabottom;
+
+	if (megacentroid = 1)
+	{
+		cx = cx * 2;
+		cy = cy * 2;	
+	}
+
+	int intcx = round(cx);
+	int intcy = round(cy);
+
+
+}*/
