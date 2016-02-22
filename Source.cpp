@@ -2,11 +2,13 @@
 #include <iostream>
 #include <thread>
 #include <fstream>
+#include <algorithm>
 
 // Declare Functions
 void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::vector < std::vector<int> > list_of_hits);
 //void Centroid_image(vector<vector<int> > &cluster, int shot, int cluster_no);
 void print(std::vector<std::vector<std::vector<std::vector<int> > > >* shot_list);
+void order_clusters(std::vector<std::vector<std::vector<int> > >* shot_loc);
 
 // Declare Vector Structures
 std::vector<std::vector<int> > input_holder;
@@ -21,10 +23,8 @@ std::vector<std::thread> threads;
 
 // Integer Declarations
 int x, y, t, shot, bin;
-int ending;
 
 // Integer Definitions
-int thread_count = 0;
 int shot_count = 1;
 int main()
 {
@@ -59,7 +59,7 @@ int main()
 				threads.push_back(std::thread(build_cluster, &shot_list[shot-2], input_holder)); // shot -1 to because the shot iterator has already increased, - another one to account for index from 0 in vector.
 				input_holder.erase(input_holder.begin(), input_holder.end()); // Clears the input_holder vector for the next shot
 				++shot_count;
-				++thread_count;
+
 
 
 			}
@@ -70,23 +70,44 @@ int main()
 			input_holder[input_holder.size() - 1][2] = y;
 			input_holder[input_holder.size() - 1][3] = bin;
 		}
-		goto exit;
+		InputFile.close();
 	}
+		
 	else
 	{
 		std::cout << "File not opened." << std::endl;
 		return 0;
 	}
-	exit:
-		std::cout << "Clusters built." << std::endl;
 
-		std::cout << "Joining threads.." << std::endl;
+	std::cout << "Clusters built." << std::endl << "Joining threads.." << std::endl;
 		for (int i = 0; i < threads.size(); ++i)
 		{
 			threads[i].std::thread::join();
 		}
-		std::cout << "Completed." << std::endl;
+		threads.erase(threads.begin(), threads.end());
+		std::cout << "Threads joined." << std::endl;
+		///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+																							/* File Imported & Clusters Built - Centroiding Code */
+		char pause;
+		std::cout << "Ready to centroid." << std::endl;
+		std::cin >> pause;
 
+		// Sort the clusters by time
+		std::cout << "Arranging the clusters by time..." << std::endl;
+		for (int i = 0; i < shot_list.size(); ++i)
+			{
+				threads.push_back(std::thread(order_clusters, &shot_list[i]));
+				goto temp1;
+			}
+		temp1:
+		std::cout << "Joining threads..." << std::endl;
+		for (int i = 0; i < threads.size(); ++i)
+		{
+			threads[i].std::thread::join();
+		}
+		threads.erase(threads.begin(), threads.end());
+		std::cout << "Threads joined" << std::endl;
+		
 
 		for (int i = 0; i < shot_list[0].size(); ++i) // cycle through clusters
 		{
@@ -94,17 +115,14 @@ int main()
 			for (int j = 0; j < shot_list[0][i].size(); ++j)
 			{
 				std::cout << "Hit: " << j+1 << std::endl;
-				std::cout <<"t = " << shot_list[0][i][j][0] << " x = " << shot_list[0][i][j][1] << "y = " << shot_list[0][i][j][2] << std::endl;
+				std::cout <<"t = " << shot_list[0][i][j][0] << " x = " << shot_list[0][i][j][1] << " y = " << shot_list[0][i][j][2] << std::endl;
 			}
 			std::cout << std::endl;
 		}
+
 		char ending;
 		std::cin >> ending;
 		return 0;
-
-
-	
-
 }
 
 void print(std::vector<std::vector<std::vector<std::vector<int> > > >* shot_list)
@@ -112,7 +130,7 @@ void print(std::vector<std::vector<std::vector<std::vector<int> > > >* shot_list
 	std::cout << "This function works." << std::endl;
 }
 
-void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::vector < std::vector<int> > list_of_hits)
+void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::vector<std::vector<int> > list_of_hits)
 {
 	//Declarations
 	std::vector<std::vector<std::vector<int> > > cluster_list;
@@ -151,6 +169,21 @@ void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::
 	}
 
  *shot_loc= cluster_list; 
+}
+
+void order_clusters(std::vector<std::vector<std::vector<int> > >* shot_loc)
+{
+	//std::cout << cluster->size() << std::endl;
+	std::vector<std::vector<std::vector<int> > > cluster_loc;
+	cluster_loc = *shot_loc;
+	for (int i = 0; i < cluster_loc.size(); ++i)
+	{
+		if (cluster_loc[i].size() > 1)
+		{
+		sort(cluster_loc[i].begin(), cluster_loc[i].end());
+		}
+	}
+	*shot_loc = cluster_loc;
 }
 
 /*void Centroid_image(vector<vector<int> > &cluster, int shot, int cluster_no)
