@@ -4,12 +4,12 @@
 #include <fstream>
 
 // Declare Functions
-void build_cluster(std::vector<std::vector<std::vector<std::vector<int> > > > &shot_list, std::vector < std::vector<int> > list_of_hits, int shot);
-void print();
+void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::vector < std::vector<int> > list_of_hits);
+void print(std::vector<std::vector<std::vector<std::vector<int> > > >* shot_list);
 
 // Declare Vector Structures
 std::vector<std::vector<int> > input_holder;
-std::vector < std::vector < std::vector<std::vector<int> > > > shot_list;
+std::vector < std::vector < std::vector<std::vector<int> > > > shot_list(1000);
 std::vector<std::vector<std::vector<int> > > cluster_list;
 std::vector<std::vector<int> > hit_list;
 std::vector<int> hit(4);
@@ -23,12 +23,12 @@ int x, y, t, shot, bin;
 int ending;
 
 // Integer Definitions
-int thread_count = 1;
+int thread_count = 0;
 int shot_count = 1;
 int main()
 {
-
-	shot_list.resize(1);
+	std::cout << std::thread::hardware_concurrency() << std::endl;
+	shot_list.resize(1000);
 	std::cout << "Method Solved?" << std::endl;
 	std::cout << "Intialising centroiding software." << std::endl << "Reading in and identifying clusters..." << std::endl;
 	std::cout << shot_count;
@@ -41,28 +41,32 @@ int main()
 			//std::cout << "Shot = " << shot << " shot_count = " << shot_count << std::endl;
 			if (shot_count != shot) // Every time the shot number changes
 			{
-				std::cout << "Building the cluster for shot: " << shot -1 << std::endl;
-				build_cluster(shot_list, input_holder, shot - 1);
+				//std::cout << "Building the cluster for shot: " << shot -1 << std::endl;
+				//build_cluster(shot_list, input_holder, shot - 1);
+				//std::cout << "Thread count = " << thread_count << std::endl;
 				/*if (thread_count == 2)
-				{
+				{	std::cout << "Ending threads.";
 					for (int i = 0; i < threads.size(); ++i)
 					{
-						//std::cout << "Ending thread: " << i << std::endl;
+						std::cout << "Ending thread: " << i << std::endl;
 						threads[i].std::thread::join();
 						threads.erase(threads.begin(), threads.end());
-						thread_count = 1;
+						std::cout << "This bit" << std::endl;
+						thread_count = 0;
+
 					}
 
 				}*/
 				//std::cout << "New shot." << std::endl;
 				//shot_list.push_back(cluster_list);
-				//threads.push_back(std::thread(print)); // Create a new thread and launch it
-				//threads.push_back(std::thread(build_cluster, shot_list, input_holder, shot - 1));
+				//threads.push_back(std::thread(print, &shot_list)); // Create a new thread and launch it
+				threads.push_back(std::thread(build_cluster, &shot_list[shot-2], input_holder)); // shot -1 to because the shot iterator has already increased, - another one to account for index from 0 in vector.
 				//std::cout << "Thread launched for shot: " << shot-1 << std::endl;
 				//std::cout << "Input holder size before erase: " << input_holder.size() << std::endl;
 				input_holder.erase(input_holder.begin(), input_holder.end()); // Clears the input_holder vector for the next shot
 				//std::cout << "Input holder after erase: " << input_holder.size() << std::endl;
 				++shot_count;
+				++thread_count;
 				//get_thread:;
 				//threads[0].join();
 				//goto exit;
@@ -83,6 +87,13 @@ int main()
 	}
 	exit:
 		std::cout << "Clusters built." << std::endl;
+
+		std::cout << "Joining threads.." << std::endl;
+		for (int i = 0; i < threads.size(); ++i)
+		{
+			threads[i].std::thread::join();
+		}
+		std::cout << "Completed." << std::endl;
 		char ending;
 		std::cin >> ending;
 		return 0;
@@ -92,12 +103,12 @@ int main()
 
 }
 
-void print()
+void print(std::vector<std::vector<std::vector<std::vector<int> > > >* shot_list)
 {
 	std::cout << "This function works." << std::endl;
 }
 
-void build_cluster(std::vector<std::vector<std::vector<std::vector<int> > > > &shot_list, std::vector < std::vector<int> > list_of_hits, int shot_loc)
+void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::vector < std::vector<int> > list_of_hits)
 {
 	//Declarations
 	std::vector<std::vector<std::vector<int> > > cluster_list;
@@ -133,6 +144,7 @@ void build_cluster(std::vector<std::vector<std::vector<std::vector<int> > > > &s
 	cluster_list[cluster_list.size() - 1][0][2] = list_of_hits[list][2];
 	cluster_list[cluster_list.size() - 1][0][3] = list_of_hits[list][3];
 	added_to_cluster:;
-	}	
-shot_list[shot_loc - 1] = cluster_list; 
+	}
+
+ *shot_loc= cluster_list; 
 }
