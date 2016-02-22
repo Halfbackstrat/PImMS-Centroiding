@@ -6,9 +6,10 @@
 
 // Declare Functions
 void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::vector < std::vector<int> > list_of_hits);
-//void Centroid_image(vector<vector<int> > &cluster, int shot, int cluster_no);
+void Centroid_image(std::vector<std::vector<int> >* cluster, int shot, int hit_position);
 void print(std::vector<std::vector<std::vector<std::vector<int> > > >* shot_list);
 void order_clusters(std::vector<std::vector<std::vector<int> > >* shot_loc);
+float sum_vector(std::vector<float> vec);
 
 // Declare Vector Structures
 std::vector<std::vector<int> > input_holder;
@@ -16,7 +17,7 @@ std::vector < std::vector < std::vector<std::vector<int> > > > shot_list(1000);
 std::vector<std::vector<std::vector<int> > > cluster_list;
 std::vector<std::vector<int> > hit_list;
 std::vector<int> hit(4);
-
+std::vector<std::vector<std::vector<int> > > final_image(1000);
 
 // Declare Threads
 std::vector<std::thread> threads;
@@ -90,7 +91,10 @@ int main()
 																							/* File Imported & Clusters Built - Centroiding Code */
 		char pause;
 		std::cout << "Ready to centroid." << std::endl;
-		std::cin >> pause;
+		//std::cin >> pause;
+
+		
+
 
 		// Sort the clusters by time
 		std::cout << "Arranging the clusters by time..." << std::endl;
@@ -109,7 +113,40 @@ int main()
 		std::cout << "Threads joined" << std::endl;
 		
 
-		for (int i = 0; i < shot_list[0].size(); ++i) // cycle through clusters
+
+
+		// Centroid the clusters
+		std::cout << "Centroiding the clusters" << std::endl; 
+
+		for (int i = 0; i < shot_list.size(); ++i)
+		{
+			//std::cout << "Shot number: " << i << std::endl;
+
+			for (int j = 0; j < shot_list[i].size(); ++j) // Cycle through the clusters
+			{
+				final_image[i].push_back(hit);
+				int hit_position = final_image[i].size() - 1;
+				if (shot_list[i][j].size() > 1) // Check to make sure it's a cluster and not a single point already
+				{
+					threads.push_back(std::thread(Centroid_image, &shot_list[i][j], i, hit_position)); // Arugment must contain hit_position (pass by value) to provide an address for the hit to be stored
+				}
+				else
+				{
+					final_image[i][hit_position][0] = shot_list[i][j][0][1];
+					final_image[i][hit_position][1] = shot_list[i][j][0][2];
+					final_image[i][hit_position][2] = shot_list[i][j][0][0];
+					final_image[i][hit_position][3] = i + 1;
+				}
+			}
+			
+			for (int j = 0; j < threads.size(); ++j)
+			{
+				threads[j].std::thread::join();
+			}
+			threads.erase(threads.begin(), threads.end());
+		}
+
+		/*for (int i = 0; i < shot_list[0].size(); ++i) // cycle through clusters
 		{
 			std::cout << "Cluster: " << i+1 << std::endl;
 			for (int j = 0; j < shot_list[0][i].size(); ++j)
@@ -119,6 +156,15 @@ int main()
 			}
 			std::cout << std::endl;
 		}
+		for (int i = 0; i < final_image.size(); ++i)
+		{
+			for (int j = 0; j < final_image[i].size(); ++j)
+			{
+				std::cout << "Hit: " << i+1 << std::endl;
+				std::cout << "x = " << final_image[i][j][0] << " y = " << final_image[i][j][1] << " t = " << final_image[i][j][2] << std::endl;
+			}
+			std::cout << std::endl;
+		}*/
 
 		char ending;
 		std::cin >> ending;
@@ -186,18 +232,21 @@ void order_clusters(std::vector<std::vector<std::vector<int> > >* shot_loc)
 	*shot_loc = cluster_loc;
 }
 
-/*void Centroid_image(vector<vector<int> > &cluster, int shot, int cluster_no)
+void Centroid_image(std::vector<std::vector<int> >* cluster, int shot, int hit_position)
 {
-	vector<float> topx, topy, bottom;
 
-	for (int i - 0; i < cluster.size(); ++i)
+	std::vector<float> topx, topy, bottom;
+	std::vector<std::vector<int> > cluster_loc = *cluster;
+
+	for (int i = 0; i < cluster_loc.size(); ++i)
 	{
-		int weight = cluster[i][0] - cluster[0][0] + 1;
-		float NRiWix = (cluster.size() * cluster[i][1]) / weight;
+		float weight = cluster_loc[i][0] - cluster_loc[0][0] + 1;
+		//std::cout << "weight = " << weight << std::endl;
+		float NRiWix = (cluster_loc.size() * cluster_loc[i][1]) / weight;
 		topx.push_back(NRiWix);
-		float NRiWiy = (cluster.size() * cluster[i][2]) / weight;
+		float NRiWiy = (cluster_loc.size() * cluster_loc[i][2]) / weight;
 		topy.push_back(NRiWiy);
-		float NWi = cluster.size() / weight;
+		float NWi = cluster_loc.size() / weight;
 		bottom.push_back(NWi);
 	}
 
@@ -212,14 +261,27 @@ void order_clusters(std::vector<std::vector<std::vector<int> > >* shot_loc)
 	float cx = sigmax / sigmabottom;
 	float cy = sigmay / sigmabottom;
 
-	if (megacentroid = 1)
+	/*if (megacentroid = 1)
 	{
 		cx = cx * 2;
 		cy = cy * 2;	
-	}
+	}*/
 
 	int intcx = round(cx);
 	int intcy = round(cy);
 
+	/*final_image[shot][hit_position][0] = intcx;
+	final_image[shot][hit_position][1] = intcy;
+	final_image[shot][hit_position][2] = cluster_loc[0][0];
+	final_image[shot][hit_position][3] = shot + 1;*/
+}
 
-}*/
+float sum_vector(std::vector<float> vec)
+{
+	float sigma = 0;
+	for (int a = 0; a < vec.size(); ++a)
+	{
+		sigma = sigma + vec[a];
+	}
+	return sigma;
+}
