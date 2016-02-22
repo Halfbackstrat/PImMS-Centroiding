@@ -41,8 +41,8 @@ int main()
 			//std::cout << "Shot = " << shot << " shot_count = " << shot_count << std::endl;
 			if (shot_count != shot) // Every time the shot number changes
 			{
-				std::cout << "Building the cluster" << std::endl;
-				//build_cluster(shot_list, input_holder, shot - 1);
+				std::cout << "Building the cluster for shot: " << shot -1 << std::endl;
+				build_cluster(shot_list, input_holder, shot - 1);
 				/*if (thread_count == 2)
 				{
 					for (int i = 0; i < threads.size(); ++i)
@@ -57,16 +57,15 @@ int main()
 				//std::cout << "New shot." << std::endl;
 				//shot_list.push_back(cluster_list);
 				//threads.push_back(std::thread(print)); // Create a new thread and launch it
-				//build_cluster(shot_list, input_holder, shot - 1);
-				threads.push_back(std::thread(build_cluster, shot_list, input_holder, shot - 1));
+				//threads.push_back(std::thread(build_cluster, shot_list, input_holder, shot - 1));
 				//std::cout << "Thread launched for shot: " << shot-1 << std::endl;
 				//std::cout << "Input holder size before erase: " << input_holder.size() << std::endl;
-				//input_holder.erase(input_holder.begin(), input_holder.end()); // Clears the input_holder vector for the next shot
+				input_holder.erase(input_holder.begin(), input_holder.end()); // Clears the input_holder vector for the next shot
 				//std::cout << "Input holder after erase: " << input_holder.size() << std::endl;
-				//++shot_count;
+				++shot_count;
 				//get_thread:;
 				//threads[0].join();
-				goto exit;
+				//goto exit;
 			}
 
 			input_holder.push_back(hit); // Creates a raw list of hits for the shot
@@ -75,6 +74,7 @@ int main()
 			input_holder[input_holder.size() - 1][2] = y;
 			input_holder[input_holder.size() - 1][3] = bin;
 		}
+		goto exit;
 	}
 	else
 	{
