@@ -3,6 +3,7 @@
 #include <thread>
 #include <fstream>
 #include <algorithm>
+#include <cmath>
 
 // Declare Functions
 void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::vector < std::vector<int> > list_of_hits);
