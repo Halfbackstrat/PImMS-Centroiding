@@ -82,8 +82,8 @@ int main()
 		return 0;
 	}
 
-	std::cout << "Clusters built." << std::endl << "Joining threads.." << std::endl;
-		for (int i = 0; i < threads.size(); ++i)
+	std::cout << "Clusters built." << std::endl << "Joining threads.." << threads.size() << std::endl;
+        for (int i = 0; i < threads.size(); ++i)
 		{
 			threads[i].std::thread::join();
 		}
@@ -215,7 +215,7 @@ void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::
 	cluster_list[0][0][3] = list_of_hits[0][3];
 	
 	for (int list = 1; list < list_of_hits.size(); ++list)
-	{
+	{ int exit_count = 0;
 		for (int i = 0; i < cluster_list.size(); ++i)
 		{
 			for (int j = 0; j < cluster_list[i].size(); ++j)
@@ -227,17 +227,21 @@ void build_cluster(std::vector<std::vector<std::vector<int> > >* shot_loc, std::
 					cluster_list[i][cluster_list[i].size() - 1][1] = list_of_hits[list][1];
 					cluster_list[i][cluster_list[i].size() - 1][2] = list_of_hits[list][2];
 					cluster_list[i][cluster_list[i].size() - 1][3] = list_of_hits[list][3];
-					goto added_to_cluster;
+					//++exit_count;
+                    goto skip_new_cluster;
 				}
 			}
 		}
-	cluster_list.push_back(hit_list);
-	cluster_list[cluster_list.size() - 1].push_back(hit);
-	cluster_list[cluster_list.size() - 1][0][0] = list_of_hits[list][0];
-	cluster_list[cluster_list.size() - 1][0][1] = list_of_hits[list][1];
-	cluster_list[cluster_list.size() - 1][0][2] = list_of_hits[list][2];
-	cluster_list[cluster_list.size() - 1][0][3] = list_of_hits[list][3];
-	added_to_cluster:;
+        //if (exit_count = 0)
+        //{
+	       cluster_list.push_back(hit_list);
+	       cluster_list[cluster_list.size() - 1].push_back(hit);
+	       cluster_list[cluster_list.size() - 1][0][0] = list_of_hits[list][0];
+	       cluster_list[cluster_list.size() - 1][0][1] = list_of_hits[list][1];
+	       cluster_list[cluster_list.size() - 1][0][2] = list_of_hits[list][2];
+	       cluster_list[cluster_list.size() - 1][0][3] = list_of_hits[list][3];
+        //}
+        skip_new_cluster:;
 	}
 
  *shot_loc= cluster_list; 
@@ -260,7 +264,7 @@ void order_clusters(std::vector<std::vector<std::vector<int> > >* shot_loc)
 
 void Centroid_image(std::vector<std::vector<int> >* cluster, int shot, int hit_position, std::vector<int>* out_address)
 {
-    std::cout << "Centroid function begins" << std::endl;
+    //std::cout << "Centroid function begins" << std::endl;
 	std::vector<float> topx, topy, bottom;
 	std::vector<std::vector<int> > cluster_loc = *cluster;
 
@@ -301,7 +305,7 @@ void Centroid_image(std::vector<std::vector<int> >* cluster, int shot, int hit_p
 
 	int intcx = round(cx);
 	int intcy = round(cy);
-    std:: cout << "Got this far" << std::endl;
+    //std:: cout << "Got this far" << std::endl;
     std::vector<int> output(4);
     output[0] = intcx;
     output[1] = intcy;
