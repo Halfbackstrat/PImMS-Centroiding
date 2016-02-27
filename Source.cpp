@@ -86,6 +86,7 @@ int main(int argc, char* argv[])
                 }
               
                 threads.push_back(std::thread(Build_Clusters, &shot_list[shot - 2], input_holder));
+                input_holder.erase(input_holder.begin(), input_holder.end());
                 ++thread_count;
                 ++shot_count;
                //goto out;
@@ -211,6 +212,7 @@ while (list.size() > 0)
         cluster_counter = i;
     }
 }
+std::cout << "Shot built." << std::endl; 
 *shot_loc = clusters;
 //std::cout << "Debug 2" << std::endl;
 }
