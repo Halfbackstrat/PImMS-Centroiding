@@ -14,6 +14,7 @@ void Build_Clusters(std::vector<std::vector<std::vector<int> > >* shot_loc, std:
 void Order_Clusters(std::vector<std::vector<std::vector<int> > >* shot_loc);
 void Centroid_Image(std::vector<std::vector<int> >* cluster, int shot, int hit_position, std::vector<int>* out_address);
 float Sum_Vector(std::vector<float> vec);
+float Average_Vector(std::vector<int> vec);
 
 // Vector Declarations
 std::vector<std::vector<int> > input_holder;
@@ -22,6 +23,7 @@ std::vector<std::vector<std::vector<int> > > cluster_list;
 std::vector<std::vector<int> > hit_list;
 std::vector<int> hit(4);
 std::vector<std::vector<std::vector<int> > > final_image;
+std::vector<int> cluster_sizes; // Cluster sizes for averaging
 
 // Thread Declaration
 std::vector<std::thread> threads;
@@ -32,9 +34,11 @@ int x, y, t, shot, bin, max_shot;
 // Integer Definitions
 int shot_count = 1;
 int thread_count = 0;
+int event_counter = 0;
+int centroided_events = 0; 
 
 // Boolean Definitions
-bool megacentroid = 0;
+bool megacentroid = false;
 
 int main(int argc, char* argv[])
 {   
@@ -44,20 +48,22 @@ int main(int argc, char* argv[])
     }
     if (argc > 2)
     {
-        megacentroid = argv[2];
+        megacentroid = true; 
     } 
     
     std::stringstream ss;
     ss << argv[1];
     std::string inputstring;
     std::string outputstring;
+    std::string logstring;
     std::string outy = ".out";
+    std::string logy = ".log";
     ss >> inputstring;
     outputstring = inputstring + outy;
+    logstring = inputstring + logy;
 
     std::ifstream InputFile; // Gathers the number of shots from the file in order to reserve vector sizes.
     InputFile.open(inputstring);
-    int max_shot;
     if (InputFile.is_open())
     {
         while(InputFile >> x >> y >> t >> shot >> bin)
@@ -73,6 +79,7 @@ int main(int argc, char* argv[])
     {
         while (InputFile >> x >> y >> t >> shot >> bin)
         {
+	    ++event_counter;
             if (shot_count!= shot)
             {
                 shot_list.push_back(cluster_list);
@@ -112,8 +119,18 @@ int main(int argc, char* argv[])
         threads[i].join();
     }
     threads.erase(threads.begin(), threads.end());
+    
+    for (int i = 0; i < shot_list.size(); ++i)
+    {
+        for (int j = 0; j < shot_list[i].size(); ++j)
+        {
+            cluster_sizes.push_back(shot_list[i][j].size());
+        }
+    }
+    
+    float average = Average_Vector(cluster_sizes);  
    
-    std::cout << "Clusters built" << std::endl;
+    //std::cout << "Clusters built" << std::endl;
 ////////Clusters built - Centroid the data
 
     //Order the clusters by time
@@ -157,6 +174,13 @@ int main(int argc, char* argv[])
         threads.erase(threads.begin(), threads.end());
     }
     
+    for (int i = 0; i < final_image.size(); ++i)
+	{
+	    for (int j = 0; j < final_image[i].size(); ++j)
+		{
+		++centroided_events;
+		} 
+	} 
     // Write the data to a new file 
     
     std::ofstream OutputFile(outputstring);
@@ -168,6 +192,12 @@ int main(int argc, char* argv[])
         }
     }
     OutputFile.close();
+
+    std::ofstream LogFile(logstring); // Write the log file containing information about the data analysis.
+    LogFile << "Number of recorded events: " << event_counter << std::endl;
+    LogFile << "Number of centroided events: " << centroided_events << std::endl;
+    LogFile << "The average cluster size was: " << average << std::endl;
+    LogFile.close(); 
     
     return 0;
 }
@@ -212,7 +242,7 @@ while (list.size() > 0)
         cluster_counter = i;
     }
 }
-std::cout << "Shot built." << std::endl; 
+//std::cout << "Shot built." << std::endl; 
 *shot_loc = clusters;
 //std::cout << "Debug 2" << std::endl;
 }
@@ -257,7 +287,7 @@ void Centroid_Image(std::vector<std::vector<int> >* cluster, int shot, int hit_p
     float cx = sigmax / sigmabottom;
     float cy = sigmay / sigmabottom;
     
-    if (megacentroid = 1)
+    if (megacentroid = true)
     {
         cx = cx * 2;
         cy = cy * 2;
@@ -273,6 +303,19 @@ void Centroid_Image(std::vector<std::vector<int> >* cluster, int shot, int hit_p
     output[2] = cluster_loc[0][0];
     output[3] = shot + 1;
     *out_address = output;
+}
+
+float Average_Vector(std::vector<int> vec)
+{
+    float average;
+    int av_bottom = vec.size();
+    int av_top = 0;
+    for (int i = 0; i < vec.size(); ++i)
+    {
+        av_top = av_top + vec[i];
+    }
+    average = float(av_top) / float(av_bottom);
+    return average;
 }
 
 float Sum_Vector(std::vector<float> vec)
